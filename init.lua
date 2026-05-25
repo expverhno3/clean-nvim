@@ -9,11 +9,6 @@ vim.opt.ignorecase = true
 vim.opt.cursorline = true
 
 vim.opt.hlsearch = true
-
-vim.opt.formatoptions:remove("c")
-vim.opt.formatoptions:remove("r")
-vim.opt.formatoptions:remove("o")
-
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 
 vim.api.nvim_create_autocmd("TextYankPost", {
@@ -22,6 +17,20 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 	callback = function()
 		vim.highlight.on_yank()
 	end,
+})
+
+vim.api.nvim_create_autocmd('InsertLeave', {
+  callback = function()
+    vim.fn.VSCodeNotify('hideSuggestWidget')
+    vim.fn.VSCodeNotify('closeParameterHints')
+    vim.fn.VSCodeNotify('editor.action.inlineSuggest.hide')
+  end,
+})
+
+vim.api.nvim_create_autocmd('InsertEnter', {
+  callback = function()
+    vim.fn.VSCodeNotify('editor.action.inlineSuggest.trigger')
+  end,
 })
 
 -- NEW HERE FOR vscode-nvim
@@ -36,16 +45,38 @@ vim.api.nvim_set_keymap(
 	':<C-u>call VSCodeNotify("workbench.action.toggleEditorWidths")<CR>',
 	{ silent = true }
 )
+-- easy change windows focus
 vim.api.nvim_set_keymap("n", "<C-h>", "<C-w>h", { silent = true })
 vim.api.nvim_set_keymap("x", "<C-h>", "<C-w>h", { silent = true })
 vim.api.nvim_set_keymap("n", "<C-l>", "<C-w>l", { silent = true })
 vim.api.nvim_set_keymap("x", "<C-l>", "<C-w>l", { silent = true })
 
+--- easy change editor focus (pair with vscode keybindings)
+vim.api.nvim_set_keymap("n", "<C-j>", ':call VSCodeNotify("workbench.action.nextEditorInGroup")<CR>', { silent = true })
+vim.api.nvim_set_keymap("x", "<C-j>", ':call VSCodeNotify("workbench.action.nextEditorInGroup")<CR>', { silent = true })
+vim.api.nvim_set_keymap("n", "<C-k>", ':call VSCodeNotify("workbench.action.previousEditorInGroup")<CR>', { silent = true })
+vim.api.nvim_set_keymap("x", "<C-k>", ':call VSCodeNotify("workbench.action.previousEditorInGroup")<CR>', { silent = true })
+
+--- easy change editor group size
+vim.api.nvim_set_keymap("n", "<C-w><", ':call VSCodeNotify("workbench.action.decreaseViewWidth")<CR>', { silent = true })
+vim.api.nvim_set_keymap("x", "<C-w><", ':call VSCodeNotify("workbench.action.decreaseViewWidth")<CR>', { silent = true })
+vim.api.nvim_set_keymap("n", "<C-w>>", ':call VSCodeNotify("workbench.action.increaseViewWidth")<CR>', { silent = true })
+vim.api.nvim_set_keymap("x", "<C-w>>", ':call VSCodeNotify("workbench.action.increaseViewWidth")<CR>', { silent = true })
+
+-- which key
 vim.api.nvim_set_keymap("n", "<Space>", ':call VSCodeNotify("whichkey.show")<CR>', { silent = true })
 vim.api.nvim_set_keymap("x", "<Space>", ':call VSCodeNotify("whichkey.show")<CR>', { silent = true })
 
 vim.api.nvim_set_keymap("v", "<", "<gv", { silent = true })
 vim.api.nvim_set_keymap("v", ">", ">gv", { silent = true })
+
+-- avoiod copy after delete
+vim.api.nvim_set_keymap('n', 'd', '"_d', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'dd', '"_dd', { noremap = true, silent = true })
+
+-- Map x and X to cut (delete and yank to clipboard)
+vim.api.nvim_set_keymap('n', 'x', 'd', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'xx', 'dd', { noremap = true, silent = true })
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -70,6 +101,7 @@ require("lazy").setup({
             mode = function(str)
               return "\\<" .. str
             end,
+            multi_window = false,
           },
         }) end,
         desc = "Flash" },
@@ -105,6 +137,3 @@ require("lazy").setup({
     "tpope/vim-repeat", event = "VeryLazy" 
   }
 })
-
--- flash settings
-
